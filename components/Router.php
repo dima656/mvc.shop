@@ -36,18 +36,32 @@ class Router
 
        foreach ($this->routes as $uriPattern=>$path) {
            if (preg_match( "~$uriPattern~",$uri)) {
-              $segments=explode('/',$path);
+
+               echo '<br>what user are lokking for ' . $uri;
+               echo '<br>matches from rules ' . $uriPattern;
+               echo '<br>who work with ' . $path;
+
+               //receive internal route from external according to rules
+               $internalRoute=preg_replace("~$uriPattern~",$path,$uri);
+               echo '<br>need to be created ' . $internalRoute;
+
+              $segments=explode('/',$internalRoute);
 
                $controllerName=array_shift($segments) . 'Controller';
                $controllerName=ucfirst($controllerName);
                $actionName='action'. ucfirst(array_shift($segments));
+               $parameters=$segments;
+               echo $controllerName;
+               echo $actionName;
+               print_r($parameters);
                $controllerFile=ROOT . '/controllers/' . $controllerName . '.php';
                if (file_exists($controllerFile)) {
                    include_once $controllerFile;
                }
 
                $controllerObject=new $controllerName;
-               $result=$controllerObject->$actionName();
+               $result=call_user_func_array([$controllerObject,$actionName],$parameters);
+              // $result=$controllerObject->$actionName($parameters);
                if ($result !=null) {
                    break;
                }
